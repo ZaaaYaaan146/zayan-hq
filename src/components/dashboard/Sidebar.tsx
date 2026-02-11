@@ -12,27 +12,27 @@ export function Sidebar() {
   const workingAgents = agents.filter(a => a.status === 'working').length;
   
   return (
-    <div className="w-72 border-r bg-card flex flex-col h-full">
+    <div className="w-64 border-r bg-card flex flex-col h-full shrink-0">
       {/* Header */}
-      <div className="p-4 border-b">
-        <h1 className="text-xl font-bold flex items-center gap-2">
+      <div className="p-3 border-b shrink-0">
+        <h1 className="text-lg font-bold flex items-center gap-2">
           🦦 Zayan HQ
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground mt-0.5">
           {agents.length} agents · {workingAgents} actif{workingAgents !== 1 ? 's' : ''}
         </p>
       </div>
       
       {/* Projects */}
-      <div className="p-4">
-        <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
-          <FolderKanban className="w-4 h-4" />
+      <div className="p-3 shrink-0">
+        <h2 className="text-xs font-semibold flex items-center gap-1.5 mb-2 text-muted-foreground uppercase tracking-wide">
+          <FolderKanban className="w-3.5 h-3.5" />
           Projets
         </h2>
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           <button
             onClick={() => selectProject(null)}
-            className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+            className={`w-full text-left px-2 py-1.5 rounded text-sm transition-colors ${
               selectedProject === null ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
             }`}
           >
@@ -42,12 +42,12 @@ export function Sidebar() {
             <button
               key={project.id}
               onClick={() => selectProject(project.id)}
-              className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center gap-2 ${
+              className={`w-full text-left px-2 py-1.5 rounded text-sm transition-colors flex items-center gap-2 ${
                 selectedProject === project.id ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
               }`}
             >
               <div 
-                className="w-2 h-2 rounded-full" 
+                className="w-2 h-2 rounded-full shrink-0" 
                 style={{ backgroundColor: project.color }}
               />
               {project.name}
@@ -59,15 +59,15 @@ export function Sidebar() {
       <Separator />
       
       {/* Agents */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="p-4 pb-2">
-          <h2 className="text-sm font-semibold flex items-center gap-2">
-            <Users className="w-4 h-4" />
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="p-3 pb-1.5 shrink-0">
+          <h2 className="text-xs font-semibold flex items-center gap-1.5 text-muted-foreground uppercase tracking-wide">
+            <Users className="w-3.5 h-3.5" />
             Équipe
           </h2>
         </div>
-        <ScrollArea className="flex-1 px-4 pb-4">
-          <div className="space-y-3">
+        <ScrollArea className="flex-1">
+          <div className="space-y-1.5 px-3 pb-3">
             {agents.map((agent) => (
               <AgentCard key={agent.id} agent={agent} />
             ))}

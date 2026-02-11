@@ -1,8 +1,6 @@
 'use client';
 
 import { Agent } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 interface AgentCardProps {
@@ -27,39 +25,22 @@ const statusLabels = {
 
 export function AgentCard({ agent, isSelected, onClick }: AgentCardProps) {
   return (
-    <Card 
+    <div 
       className={cn(
-        "cursor-pointer transition-all hover:shadow-md border-l-4",
+        "flex items-center gap-2 p-2 rounded-lg border transition-all hover:bg-muted/50 cursor-pointer",
         isSelected && "ring-2 ring-primary"
       )}
-      style={{ borderLeftColor: agent.color }}
+      style={{ borderLeftColor: agent.color, borderLeftWidth: '3px' }}
       onClick={onClick}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="text-3xl">{agent.emoji}</div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold truncate">{agent.name}</h3>
-              <div className={cn("w-2 h-2 rounded-full", statusColors[agent.status])} />
-            </div>
-            <p className="text-sm text-muted-foreground truncate">{agent.role}</p>
-          </div>
+      <span className="text-xl shrink-0">{agent.emoji}</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <span className="font-medium text-sm truncate">{agent.name}</span>
+          <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", statusColors[agent.status])} />
         </div>
-        
-        <div className="mt-3">
-          <Badge variant="secondary" className="text-xs">
-            {statusLabels[agent.status]}
-          </Badge>
-        </div>
-        
-        {agent.currentTask && (
-          <div className="mt-2 p-2 bg-muted rounded text-sm">
-            <span className="text-muted-foreground">Tâche:</span>{' '}
-            <span className="font-medium">{agent.currentTask}</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        <p className="text-xs text-muted-foreground truncate">{agent.role}</p>
+      </div>
+    </div>
   );
 }

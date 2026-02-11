@@ -20,20 +20,20 @@ export function Dashboard() {
   }, [setAgents, setTasks, setActivities, setProjects]);
   
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen w-screen overflow-hidden bg-background">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header />
         
-        <div className="flex-1 flex min-h-0">
+        <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Main content - Kanban */}
           <div className="flex-1 min-w-0 overflow-hidden">
             <KanbanBoard />
           </div>
           
           {/* Activity sidebar */}
-          <div className="w-80 border-l p-4">
+          <div className="w-72 border-l shrink-0 overflow-hidden">
             <ActivityFeed />
           </div>
         </div>

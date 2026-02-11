@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -11,32 +10,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const username = process.env.AUTH_USERNAME;
-        const passwordHash = process.env.AUTH_PASSWORD_HASH;
+        // Simple auth for now - password in plain text
+        const validUsername = "clement";
+        const validPassword = "ZayanHQ2026";
 
-        if (!username || !passwordHash) {
-          console.error("Auth credentials not configured");
-          return null;
+        if (
+          credentials?.username === validUsername &&
+          credentials?.password === validPassword
+        ) {
+          return {
+            id: "1",
+            name: "Clément",
+            email: "clement@zayan-hq.local",
+          };
         }
 
-        if (credentials?.username !== username) {
-          return null;
-        }
-
-        const isValid = await bcrypt.compare(
-          credentials?.password as string,
-          passwordHash
-        );
-
-        if (!isValid) {
-          return null;
-        }
-
-        return {
-          id: "1",
-          name: "Clément",
-          email: "clement@zayan-hq.local",
-        };
+        return null;
       },
     }),
   ],
