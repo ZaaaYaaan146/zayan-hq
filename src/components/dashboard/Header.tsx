@@ -1,9 +1,10 @@
 'use client';
 
 import { useDashboardStore } from '@/lib/store';
+import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, MessageSquare, Settings, RefreshCw } from 'lucide-react';
+import { Plus, MessageSquare, RefreshCw, LogOut } from 'lucide-react';
 
 export function Header() {
   const { tasks, agents } = useDashboardStore();
@@ -47,6 +48,13 @@ export function Header() {
           <Button size="sm">
             <Plus className="w-4 h-4 mr-2" />
             Nouvelle tâche
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => signOut({ callbackUrl: '/login' })}
+          >
+            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </div>
