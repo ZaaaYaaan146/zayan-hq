@@ -67,8 +67,9 @@ export const sampleTasks: Task[] = [
     priority: 'high',
     assignedTo: 'zayan',
     projectId: 'signlink',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 43200000).toISOString(),
+    completedAt: new Date(Date.now() - 43200000).toISOString(),
     tags: ['setup', 'infra']
   },
   {
@@ -79,8 +80,8 @@ export const sampleTasks: Task[] = [
     priority: 'high',
     assignedTo: 'frontend',
     projectId: 'signlink',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 72000000).toISOString(),
+    updatedAt: new Date(Date.now() - 36000000).toISOString(),
     tags: ['ui', 'design']
   },
   {
@@ -91,9 +92,45 @@ export const sampleTasks: Task[] = [
     priority: 'high',
     assignedTo: 'backend',
     projectId: 'signlink',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(Date.now() - 60000000).toISOString(),
+    updatedAt: new Date(Date.now() - 30000000).toISOString(),
     tags: ['api', 'auth', 'security']
+  },
+  {
+    id: '4',
+    title: 'Page d\'accueil',
+    description: 'Landing page avec hero section et features',
+    status: 'in_progress',
+    priority: 'medium',
+    assignedTo: 'frontend',
+    projectId: 'signlink',
+    createdAt: new Date(Date.now() - 48000000).toISOString(),
+    updatedAt: new Date(Date.now() - 12000000).toISOString(),
+    tags: ['ui', 'landing']
+  },
+  {
+    id: '5',
+    title: 'Setup CI/CD',
+    description: 'Pipeline GitHub Actions pour deploy automatique',
+    status: 'backlog',
+    priority: 'medium',
+    assignedTo: 'devops',
+    projectId: 'signlink',
+    createdAt: new Date(Date.now() - 36000000).toISOString(),
+    updatedAt: new Date(Date.now() - 18000000).toISOString(),
+    tags: ['devops', 'ci']
+  },
+  {
+    id: '6',
+    title: 'Tests E2E',
+    description: 'Setup Playwright et premiers tests',
+    status: 'backlog',
+    priority: 'low',
+    assignedTo: 'qa',
+    projectId: 'signlink',
+    createdAt: new Date(Date.now() - 24000000).toISOString(),
+    updatedAt: new Date(Date.now() - 12000000).toISOString(),
+    tags: ['testing', 'e2e']
   }
 ];
 
@@ -104,5 +141,19 @@ export const sampleActivities: ActivityLog[] = [
     type: 'message',
     message: 'Dashboard Zayan HQ initialisé',
     timestamp: new Date().toISOString()
+  },
+  {
+    id: '2',
+    agentId: 'zayan',
+    type: 'task_completed',
+    message: 'Setup projet terminé',
+    timestamp: new Date(Date.now() - 43200000).toISOString()
+  },
+  {
+    id: '3',
+    agentId: 'frontend',
+    type: 'task_started',
+    message: 'Travail sur la page d\'accueil',
+    timestamp: new Date(Date.now() - 12000000).toISOString()
   }
 ];

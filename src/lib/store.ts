@@ -7,6 +7,7 @@ interface DashboardState {
   activities: ActivityLog[];
   projects: Project[];
   selectedProject: string | null;
+  selectedAgent: string | null;
   
   // Actions
   setAgents: (agents: Agent[]) => void;
@@ -22,7 +23,9 @@ interface DashboardState {
   setActivities: (activities: ActivityLog[]) => void;
   
   setProjects: (projects: Project[]) => void;
+  addProject: (project: Project) => void;
   selectProject: (id: string | null) => void;
+  selectAgent: (id: string | null) => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -31,6 +34,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   activities: [],
   projects: [],
   selectedProject: null,
+  selectedAgent: null,
   
   setAgents: (agents) => set({ agents }),
   updateAgent: (id, updates) => set((state) => ({
@@ -60,5 +64,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setActivities: (activities) => set({ activities }),
   
   setProjects: (projects) => set({ projects }),
+  addProject: (project) => set((state) => ({ projects: [...state.projects, project] })),
   selectProject: (id) => set({ selectedProject: id }),
+  selectAgent: (id) => set({ selectedAgent: id }),
 }));

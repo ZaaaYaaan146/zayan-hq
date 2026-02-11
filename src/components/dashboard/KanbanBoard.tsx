@@ -1,18 +1,36 @@
 'use client';
 
+import { useState } from 'react';
 import { useDashboardStore } from '@/lib/store';
 import { Task, TaskStatus } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Trash2, ArrowRight } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { MoreHorizontal, Trash2, ArrowRight, ArrowLeft, Edit, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -44,20 +62,30 @@ interface TaskCardProps {
 }
 
 function TaskCard({ task }: TaskCardProps) {
-  const { agents, moveTask, deleteTask, addActivity } = useDashboardStore();
+  const { agents, moveTask, deleteTask, updateTask, addActivity } = useDashboardStore();
+  const [showEdit, setShowEdit] = useState(false);
+  const [editedTask, setEditedTask] = useState({
+    title: task.title,
+    description: task.description,
+    priority: task.priority,
+    assignedTo: task.assignedTo || '',
+  });
+  
   const agent = agents.find(a => a.id === task.assignedTo);
   
   const currentIndex = columns.findIndex(c => c.id === task.status);
   const nextColumn = columns[currentIndex + 1];
+  const prevColumn = columns[currentIndex - 1];
   
-  const handleMoveNext = () => {
-    if (nextColumn) {
-      moveTask(task.id, nextColumn.id);
+  const handleMove = (direction: 'next' | 'prev') => {
+    const targetColumn = direction === 'next' ? nextColumn : prevColumn;
+    if (targetColumn) {
+      moveTask(task.id, targetColumn.id);
       addActivity({
         id: Date.now().toString(),
         agentId: task.assignedTo || 'zayan',
-        type: task.status === 'review' ? 'task_completed' : 'task_started',
-        message: `Tâche "${task.title}" → ${nextColumn.label}`,
+        type: targetColumn.id === 'done' ? 'task_completed' : 'task_started',
+        message: `Tâche "${task.title}" → ${targetColumn.label}`,
         timestamp: new Date().toISOString(),
       });
     }
@@ -73,69 +101,165 @@ function TaskCard({ task }: TaskCardProps) {
       timestamp: new Date().toISOString(),
     });
   };
+
+  const handleSaveEdit = () => {
+    updateTask(task.id, {
+      title: editedTask.title,
+      description: editedTask.description,
+      priority: editedTask.priority,
+      assignedTo: editedTask.assignedTo || undefined,
+    });
+    addActivity({
+      id: Date.now().toString(),
+      agentId: 'zayan',
+      type: 'message',
+      message: `Tâche "${editedTask.title}" modifiée`,
+      timestamp: new Date().toISOString(),
+    });
+    setShowEdit(false);
+  };
   
   return (
-    <Card className="hover:shadow-md transition-shadow group">
-      <CardContent className="p-2.5">
-        <div className="flex items-start justify-between gap-2">
-          <h4 className="font-medium text-sm leading-tight flex-1">{task.title}</h4>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <MoreHorizontal className="w-3.5 h-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {nextColumn && (
-                <DropdownMenuItem onClick={handleMoveNext}>
-                  <ArrowRight className="w-3.5 h-3.5 mr-2" />
-                  Vers {nextColumn.label}
+    <>
+      <Card className="hover:shadow-md transition-shadow group">
+        <CardContent className="p-2.5">
+          <div className="flex items-start justify-between gap-2">
+            <h4 className="font-medium text-sm leading-tight flex-1">{task.title}</h4>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <MoreHorizontal className="w-3.5 h-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setShowEdit(true)}>
+                  <Edit className="w-3.5 h-3.5 mr-2" />
+                  Modifier
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                <Trash2 className="w-3.5 h-3.5 mr-2" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        
-        {task.description && (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-            {task.description}
-          </p>
-        )}
-        
-        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-          <Badge className={cn("text-[10px] px-1.5 py-0", priorityColors[task.priority])}>
-            {priorityLabels[task.priority]}
-          </Badge>
-          {task.tags.slice(0, 2).map((tag) => (
-            <Badge key={tag} variant="outline" className="text-[10px] px-1.5 py-0">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-        
-        <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
-          {agent ? (
-            <div className="flex items-center gap-1">
-              <span>{agent.emoji}</span>
-              <span>{agent.name}</span>
-            </div>
-          ) : (
-            <span>Non assigné</span>
+                <DropdownMenuSeparator />
+                {prevColumn && (
+                  <DropdownMenuItem onClick={() => handleMove('prev')}>
+                    <ArrowLeft className="w-3.5 h-3.5 mr-2" />
+                    Vers {prevColumn.label}
+                  </DropdownMenuItem>
+                )}
+                {nextColumn && (
+                  <DropdownMenuItem onClick={() => handleMove('next')}>
+                    <ArrowRight className="w-3.5 h-3.5 mr-2" />
+                    Vers {nextColumn.label}
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                  <Trash2 className="w-3.5 h-3.5 mr-2" />
+                  Supprimer
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
+          {task.description && (
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+              {task.description}
+            </p>
           )}
-          <span>
-            {formatDistanceToNow(new Date(task.updatedAt), { addSuffix: false, locale: fr })}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
+          
+          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+            <Badge className={cn("text-[10px] px-1.5 py-0", priorityColors[task.priority])}>
+              {priorityLabels[task.priority]}
+            </Badge>
+            {task.tags.slice(0, 2).map((tag) => (
+              <Badge key={tag} variant="outline" className="text-[10px] px-1.5 py-0">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+          
+          <div className="flex items-center justify-between mt-2 text-[10px] text-muted-foreground">
+            {agent ? (
+              <div className="flex items-center gap-1">
+                <span>{agent.emoji}</span>
+                <span>{agent.name}</span>
+              </div>
+            ) : (
+              <span className="flex items-center gap-1">
+                <User className="w-3 h-3" />
+                Non assigné
+              </span>
+            )}
+            <span>
+              {formatDistanceToNow(new Date(task.updatedAt), { addSuffix: false, locale: fr })}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Edit Task Dialog */}
+      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier la tâche</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              placeholder="Titre de la tâche"
+              value={editedTask.title}
+              onChange={(e) => setEditedTask({ ...editedTask, title: e.target.value })}
+            />
+            <Textarea
+              placeholder="Description (optionnel)"
+              value={editedTask.description}
+              onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
+              rows={3}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <Select
+                value={editedTask.priority}
+                onValueChange={(v) => setEditedTask({ ...editedTask, priority: v as Task['priority'] })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Priorité" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Basse</SelectItem>
+                  <SelectItem value="medium">Moyenne</SelectItem>
+                  <SelectItem value="high">Haute</SelectItem>
+                  <SelectItem value="urgent">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={editedTask.assignedTo}
+                onValueChange={(v) => setEditedTask({ ...editedTask, assignedTo: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Assigné à" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Non assigné</SelectItem>
+                  {agents.map((agent) => (
+                    <SelectItem key={agent.id} value={agent.id}>
+                      {agent.emoji} {agent.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEdit(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              Sauvegarder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

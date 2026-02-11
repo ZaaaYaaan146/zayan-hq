@@ -21,12 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, MessageSquare, RefreshCw, LogOut } from 'lucide-react';
+import { Plus, MessageSquare, RefreshCw, LogOut, Send } from 'lucide-react';
 import { Task } from '@/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export function Header() {
-  const { tasks, agents, addTask, addActivity, projects } = useDashboardStore();
+  const { tasks, agents, addTask, addActivity, projects, activities, setActivities, setTasks } = useDashboardStore();
   const [showNewTask, setShowNewTask] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessage, setChatMessage] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -42,6 +46,46 @@ export function Header() {
   };
   
   const activeAgents = agents.filter(a => a.status === 'working').length;
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    // Simulate refresh
+    setTimeout(() => {
+      addActivity({
+        id: Date.now().toString(),
+        agentId: 'zayan',
+        type: 'message',
+        message: 'Dashboard actualisé',
+        timestamp: new Date().toISOString(),
+      });
+      setIsRefreshing(false);
+    }, 500);
+  };
+
+  const handleSendChat = () => {
+    if (!chatMessage.trim()) return;
+    
+    addActivity({
+      id: Date.now().toString(),
+      agentId: 'zayan',
+      type: 'message',
+      message: `Message reçu: "${chatMessage}"`,
+      timestamp: new Date().toISOString(),
+    });
+    
+    // Simulate Zayan's response
+    setTimeout(() => {
+      addActivity({
+        id: (Date.now() + 1).toString(),
+        agentId: 'zayan',
+        type: 'message',
+        message: `Je prends note de ta demande ! Je vais m'en occuper.`,
+        timestamp: new Date().toISOString(),
+      });
+    }, 1000);
+    
+    setChatMessage('');
+  };
 
   const handleCreateTask = () => {
     if (!newTask.title.trim()) return;
@@ -91,11 +135,22 @@ export function Header() {
           </div>
           
           <div className="flex items-center gap-1.5">
-            <Button variant="outline" size="sm" className="h-7 text-xs">
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
               Actualiser
             </Button>
-            <Button variant="outline" size="sm" className="h-7 text-xs">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => setShowChat(true)}
+            >
               <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
               Chat
             </Button>
@@ -115,6 +170,7 @@ export function Header() {
         </div>
       </header>
 
+      {/* New Task Dialog */}
       <Dialog open={showNewTask} onOpenChange={setShowNewTask}>
         <DialogContent>
           <DialogHeader>
@@ -187,6 +243,51 @@ export function Header() {
               Créer
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Chat Dialog */}
+      <Dialog open={showChat} onOpenChange={setShowChat}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              🦦 Chat avec Zayan
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col h-[400px]">
+            <ScrollArea className="flex-1 pr-4">
+              <div className="space-y-3">
+                {activities.filter(a => a.type === 'message').slice(0, 20).map((activity) => {
+                  const agent = agents.find(a => a.id === activity.agentId);
+                  return (
+                    <div key={activity.id} className="flex items-start gap-2">
+                      <span className="text-lg shrink-0">{agent?.emoji || '💬'}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{agent?.name || 'Système'}</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {new Date(activity.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{activity.message}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+            <div className="flex gap-2 mt-4 pt-4 border-t">
+              <Input
+                placeholder="Envoyer un message à Zayan..."
+                value={chatMessage}
+                onChange={(e) => setChatMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
+              />
+              <Button size="sm" onClick={handleSendChat}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>
